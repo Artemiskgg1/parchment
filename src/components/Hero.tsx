@@ -19,7 +19,6 @@ export const Hero = () => {
 
   return (
     <section ref={containerRef} className="relative h-[300vh] w-full">
-      {/* Background image */}
       <div
         className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
         style={{
