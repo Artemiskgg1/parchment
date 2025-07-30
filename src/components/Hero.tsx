@@ -15,19 +15,14 @@ export const Hero = () => {
   const smoothScale = useSpring(scale, { stiffness: 100, damping: 30 });
 
   const opacity = useTransform(scrollYProgress, [0, 0.2, 0.25], [1, 1, 0]);
-
   const smoothOpacity = useSpring(opacity, { stiffness: 100, damping: 30 });
 
   return (
     <section ref={containerRef} className="relative h-[300vh] w-full">
-      <div
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: "url('/images/Hero.jpg')",
-        }}
-      />
+      {/* Fixed black background */}
+      <div className="fixed inset-0 z-0 bg-black" />
 
-      {/* Sticky white screen with BURN cutout */}
+      {/* Sticky white screen with ABHA cutout */}
       <div className="sticky top-0 z-10 overflow-hidden">
         <motion.div
           className="w-full h-screen flex items-center justify-center"
