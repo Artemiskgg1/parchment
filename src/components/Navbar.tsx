@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button"; // shadcn button
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowBigRightDash, Github } from "lucide-react";
 
 export const ZentryNavbar = () => {
   const [isVisible, setIsVisible] = useState(true);
@@ -10,6 +13,9 @@ export const ZentryNavbar = () => {
   const [isAtTop, setIsAtTop] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+
+  const hoverSoundRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -33,21 +39,50 @@ export const ZentryNavbar = () => {
       setLastScrollY(currentScrollY);
     };
 
+    const handleClickToEnableSound = () => {
+      if (!hoverSoundRef.current) {
+        hoverSoundRef.current = new Audio("/sounds/button-hover-click.mp3");
+      }
+      setSoundEnabled(true);
+      document.removeEventListener("click", handleClickToEnableSound);
+    };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    document.addEventListener("click", handleClickToEnableSound);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("click", handleClickToEnableSound);
+    };
   }, [lastScrollY, isMounted]);
 
   const navItems = [
-    { name: "NEXUS", href: "#nexus" },
-    { name: "VAULT", href: "#vault" },
-    { name: "PROLOGUE", href: "#prologue" },
-    { name: "ABOUT", href: "#about" },
-    { name: "CONTACT", href: "#contact" },
+    { name: "HOME", href: "#home" },
+    {
+      name: "PROLOGUE",
+      href: "#about",
+      icon: <ArrowBigRightDash size={14} className="inline ml-1 mb-0.5" />,
+    },
+    {
+      name: "PROJECTS",
+      href: "#projects",
+      icon: <ArrowBigRightDash size={14} className="inline ml-1 mb-0.5" />,
+    },
+    {
+      name: "GITHUB",
+      href: "https://github.com/",
+      icon: <Github size={14} className="inline ml-1 mb-0.5" />,
+    },
   ];
 
-  if (!isMounted) {
-    return null;
-  }
+  const playHoverSound = () => {
+    if (soundEnabled && hoverSoundRef.current) {
+      hoverSoundRef.current.currentTime = 0;
+      hoverSoundRef.current.play();
+    }
+  };
+
+  if (!isMounted) return null;
 
   return (
     <motion.nav
@@ -57,79 +92,89 @@ export const ZentryNavbar = () => {
       transition={{ duration: 0.3, ease: "easeInOut" }}
     >
       <div
-        className={`rounded-md  px-6 py-3 backdrop-blur-sm transition-colors duration-300 ${
+        className={`rounded-md px-6 py-2 backdrop-blur-sm transition-colors duration-300 ${
           isAtTop ? "border-black/20 bg-white/60" : "border-white/20 bg-black"
         }`}
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between font-unigeo relative">
           {/* Logo */}
-          <div
-            className={`font-bold text-xl tracking-wider transition-colors duration-300 ${
-              isAtTop ? "text-black" : "text-white"
-            }`}
-          >
-            ZENTRY
-          </div>
+          <Link href="/" className="relative block h-9 w-9 mb-2">
+            <Image
+              src={
+                isAtTop
+                  ? "/images/arte-logo-black.png"
+                  : "/images/arte-logo-inner.png"
+              }
+              alt="Artemis Logo"
+              width={27}
+              height={27}
+              className="object-contain hover:animate-spin-slower"
+              priority
+            />
+          </Link>
 
-          {/* Desktop Nav Items */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                className={`text-sm font-medium tracking-wider transition-colors duration-300 ${
-                  isAtTop
-                    ? "text-black hover:text-black"
-                    : "text-white hover:text-white"
-                }`}
-              >
-                {item.name}
-              </a>
-            ))}
-          </div>
+          {/* Nav */}
+          <div className="flex items-center space-x-6">
+            <div className="hidden md:flex items-center space-x-4">
+              {navItems.map((item) => (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  target={item.name === "GITHUB" ? "_blank" : "_self"}
+                  onMouseEnter={playHoverSound}
+                  className={`text-xs font-bold tracking-wider px-3 py-2 rounded-full transition-all duration-300 flex items-center gap-1 ${
+                    isAtTop
+                      ? "text-black hover:text-black hover:bg-white"
+                      : "text-white hover:text-black hover:bg-white"
+                  }`}
+                >
+                  {item.name}
+                  {item.icon && item.icon}
+                </a>
+              ))}
+            </div>
 
-          {/* CTA Button */}
-          <Button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium text-sm px-6 py-2 rounded-full hover:shadow-lg transition-all duration-300">
-            ENTER GAME
-          </Button>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-            className={`md:hidden p-2 transition-colors duration-300 ${
-              isAtTop ? "text-black" : "text-white"
-            }`}
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+              className={`md:hidden p-2 transition-colors duration-300 ${
+                isAtTop ? "text-black" : "text-white"
+              }`}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        {/* Mobile Dropdown Menu */}
+        {/* Mobile Nav Items */}
         {isMobileMenuOpen && (
-          <div className="md:hidden mt-4 flex flex-col space-y-2">
+          <div className="md:hidden mt-4 flex flex-col space-y-2 font-unigeo">
             {navItems.map((item) => (
               <a
                 key={item.name}
                 href={item.href}
-                className={`text-sm font-medium tracking-wider px-2 py-1 rounded transition-colors duration-300 ${
+                target={item.name === "GITHUB" ? "_blank" : "_self"}
+                onMouseEnter={playHoverSound}
+                className={`text-sm font-medium tracking-wider px-3 py-2 rounded-full transition-colors duration-300 flex items-center gap-1 ${
                   isAtTop
-                    ? "text-black/70 hover:text-black"
-                    : "text-white/70 hover:text-white"
+                    ? "text-black/70 hover:text-black hover:bg-white"
+                    : "text-white/70 hover:text-black hover:bg-white"
                 }`}
               >
                 {item.name}
+                {item.icon && item.icon}
               </a>
             ))}
           </div>
