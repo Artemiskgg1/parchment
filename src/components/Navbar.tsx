@@ -93,7 +93,9 @@ export const ZentryNavbar = () => {
     >
       <div
         className={`rounded-md px-6 py-2 backdrop-blur-sm transition-colors duration-300 ${
-          isAtTop ? "border-black/20 bg-white/60" : "border-white/20 bg-black"
+          isAtTop
+            ? "border-black/20 bg-[#dfdff2]/60"
+            : "border-white/20 bg-black"
         }`}
       >
         <div className="flex items-center justify-between font-unigeo relative">
